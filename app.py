@@ -75,7 +75,7 @@ st.write("🔹 Input Data Columns:", input_data_df.columns.tolist())
 # Prediction Button
 if st.sidebar.button("🔍 Predict Churn"):
     prediction = model.predict(input_data)[0]
-    churn_prob = model.predict_proba(input_data)[0][1]
+    churn_prob = float(model.predict_proba(input_data)[0][1])  # Ensure it's a float
 
     # Display results
     st.subheader("📊 Prediction Result")
@@ -84,8 +84,8 @@ if st.sidebar.button("🔍 Predict Churn"):
     else:
         st.success(f"✅ **Low Risk:** Customer is unlikely to churn. (Probability: {churn_prob:.2f})")
 
-    # Show probability bar
-    st.progress(churn_prob)
+    # Fix progress bar error by ensuring a valid range
+    st.progress(min(max(churn_prob, 0.01), 1.0))
 
 # Footer
 st.markdown("""
