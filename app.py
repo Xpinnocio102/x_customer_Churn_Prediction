@@ -6,55 +6,71 @@ import pandas as pd
 # Load the trained model
 model = joblib.load("Xpinnocio_churn_prediction_model.pkl")
 
-# Set page title
+# Set page title and layout
+st.set_page_config(page_title="Customer Churn Prediction", layout="wide")
+
+# App Title and Description
 st.title("📊 Customer Churn Prediction App")
+st.markdown("""
+🚀 Predict whether a customer is likely to **churn** (leave the service) based on their account details.
+
+🔹 **How to use?**
+- Adjust the **customer details** in the **sidebar**.
+- Click **"Predict Churn"** to see results.
+""")
 
 # Sidebar for user inputs
 st.sidebar.header("📌 Customer Details")
 
-# User Inputs
+# Collect user inputs
+gender = st.sidebar.selectbox("👤 Gender", ["Male", "Female"])
+partner = st.sidebar.selectbox("💍 Partner", ["Yes", "No"])
+dependents = st.sidebar.selectbox("👶 Dependents", ["Yes", "No"])
+phone_service = st.sidebar.selectbox("📞 Phone Service", ["Yes", "No"])
+paperless_billing = st.sidebar.selectbox("📄 Paperless Billing", ["Yes", "No"])
+multiple_lines = st.sidebar.selectbox("📶 Multiple Lines", ["Yes", "No"])
+
+# Numerical inputs
 tenure = st.sidebar.slider("📅 Customer Tenure (Months)", 0, 72, 12)
 monthly_charges = st.sidebar.number_input("💵 Monthly Charges", min_value=10, max_value=150, value=50)
 total_charges = tenure * monthly_charges  # Auto-calculate
 
-contract_type = st.sidebar.selectbox("📜 Contract Type", ["Month-to-month", "One year", "Two year"])
-payment_method = st.sidebar.selectbox("💳 Payment Method", ["Electronic check", "Mailed check", "Credit card (automatic)"])
+# Encode categorical variables
+gender_map = {"Male": 0, "Female": 1}
+binary_map = {"No": 0, "Yes": 1}
 
-# Convert categorical inputs into numerical format (matching model training)
-contract_map = {"Month-to-month": [1, 0, 0], "One year": [0, 1, 0], "Two year": [0, 0, 1]}
-payment_map = {"Electronic check": [1, 0, 0], "Mailed check": [0, 1, 0], "Credit card (automatic)": [0, 0, 1]}
-
-# ✅ Ensure input values match the training format
-columns = [
-    "tenure", "MonthlyCharges", "TotalCharges",
-    "Contract_Month-to-month", "Contract_One year", "Contract_Two year",
-    "PaymentMethod_Electronic check", "PaymentMethod_Mailed check", "PaymentMethod_Credit card (automatic)"
+# Define all features expected by the model
+expected_features = [
+    "gender", "SeniorCitizen", "Partner", "Dependents", "tenure",
+    "PhoneService", "PaperlessBilling", "MonthlyCharges", "TotalCharges",
+    "MultipleLines_Yes"
 ]
 
-# Create DataFrame with proper structure
+# Create input feature array
 input_values = [
-    tenure, monthly_charges, total_charges,
-    *contract_map[contract_type], *payment_map[payment_method]
+    gender_map[gender], 0,  # SeniorCitizen (default 0)
+    binary_map[partner], binary_map[dependents], tenure,
+    binary_map[phone_service], binary_map[paperless_billing],
+    monthly_charges, total_charges, binary_map[multiple_lines]
 ]
 
-# Debugging: Check if input data matches expected feature count
-st.write(f"Expected features: {len(columns)}, Provided features: {len(input_values)}")
+# Convert input into DataFrame with correct feature names
+input_data_df = pd.DataFrame([input_values], columns=expected_features)
 
-# Convert input into DataFrame
-input_data_df = pd.DataFrame([input_values], columns=columns)
+# Ensure correct feature order matches the trained model
+for col in model.feature_names_in_:
+    if col not in input_data_df.columns:
+        input_data_df[col] = 0  # Add missing columns with default values
 
-# Debugging: Print expected vs. provided features
-st.write("🔹 Model Expected Features:", model.feature_names_in_)
-st.write("🔹 Input Data Columns:", input_data_df.columns.tolist())
-
-# Ensure feature order matches training set
+# Align feature order
 input_data_df = input_data_df[model.feature_names_in_]
 
 # Convert to NumPy array
 input_data = input_data_df.to_numpy()
 
-# Debugging: Check final input shape
-st.write("Final Input Data Shape:", input_data.shape)
+# Debugging: Show expected vs. provided features
+st.write("🔹 Model Expected Features:", model.feature_names_in_)
+st.write("🔹 Input Data Columns:", input_data_df.columns.tolist())
 
 # Prediction Button
 if st.sidebar.button("🔍 Predict Churn"):
@@ -70,3 +86,9 @@ if st.sidebar.button("🔍 Predict Churn"):
 
     # Show probability bar
     st.progress(churn_prob)
+
+# Footer
+st.markdown("""
+---
+🎯 Developed by **Your Name** | 🚀 Powered by **Machine Learning**
+""")
