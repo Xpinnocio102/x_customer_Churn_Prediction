@@ -43,6 +43,10 @@ st.write(f"Expected features: {len(columns)}, Provided features: {len(input_valu
 # Convert input into DataFrame
 input_data_df = pd.DataFrame([input_values], columns=columns)
 
+# Debugging: Print expected vs. provided features
+st.write("🔹 Model Expected Features:", model.feature_names_in_)
+st.write("🔹 Input Data Columns:", input_data_df.columns.tolist())
+
 # Ensure feature order matches training set
 input_data_df = input_data_df[model.feature_names_in_]
 
