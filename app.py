@@ -5,6 +5,9 @@ import numpy as np
 # Load the trained model
 model = joblib.load("Xpinnocio_churn_prediction_model.pkl")
 
+st.write("Input data shape:", input_data.shape)
+st.write("Expected features:", model.n_features_in_)
+
 
 # Title of the app
 st.title("Customer Churn Prediction App")
