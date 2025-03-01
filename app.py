@@ -65,60 +65,39 @@ expected_features = [
     "PaymentMethod_Mailed check"
 ]
 
-# Create input feature array (flattening categorical lists)
+# Create input feature array (Flatten categorical lists)
 input_values = [
     gender_map[gender], 0,  # SeniorCitizen (default 0)
     binary_map[partner], binary_map[dependents], tenure,
     binary_map[phone_service], binary_map[paperless_billing],
-    monthly_charges, total_charges, binary_map[multiple_lines],
-    *internet_map[internet_service],  # Internet service encoding
-    binary_map[online_security], binary_map[online_backup],
-    binary_map[device_protection], binary_map[tech_support],
-    binary_map[streaming_tv], binary_map[streaming_movies],
-    *contract_map[contract],  # Contract type encoding
-    *payment_map[payment_method]  # Payment method encoding
+    monthly_charges, total_charges, binary_map[multiple_lines]
 ]
+input_values += internet_map[internet_service]
+input_values += [binary_map[online_security], binary_map[online_backup],
+                 binary_map[device_protection], binary_map[tech_support],
+                 binary_map[streaming_tv], binary_map[streaming_movies]]
+input_values += contract_map[contract]
+input_values += payment_map[payment_method]
 
 # Debugging: Ensure input length matches expected features
-st.write(f"🔹 Expected Features Count: {len(expected_features)}")
-st.write(f"🔹 Provided Input Values Count: {len(input_values)}")
+st.write(f"✅ Expected Features: {len(expected_features)} | Provided Features: {len(input_values)}")
 
-# Convert input into DataFrame with correct feature names
+# Convert input into DataFrame
 input_data_df = pd.DataFrame([input_values], columns=expected_features)
 
-# Ensure correct feature order matches the trained model
-for col in model.feature_names_in_:
-    if col not in input_data_df.columns:
-        input_data_df[col] = 0  # Add missing columns
+# Make prediction
+prediction = model.predict(input_data_df)[0]
+churn_prob = float(model.predict_proba(input_data_df)[0][1])
 
-input_data_df = input_data_df[model.feature_names_in_]
+# Display results
+st.subheader("📊 Prediction Result")
+if prediction == 1:
+    st.error(f"🚨 **High Risk:** Customer is likely to churn. (Probability: {churn_prob:.2f})")
+else:
+    st.success(f"✅ **Low Risk:** Customer is unlikely to churn. (Probability: {churn_prob:.2f})")
 
-# Convert to NumPy array
-input_data = input_data_df.to_numpy()
-
-# Debugging: Show expected vs. provided features
-st.write("🔹 Model Expected Features:", model.feature_names_in_)
-st.write("🔹 Input Data Columns:", input_data_df.columns.tolist())
-st.write("🔹 Input Data Values:", input_data_df.values)
-
-# Prediction Button
-if st.sidebar.button("🔍 Predict Churn"):
-    prediction = model.predict(input_data)[0]
-    churn_prob = float(model.predict_proba(input_data)[0][1])  # Ensure it's a float
-
-    # Debugging: Print model outputs
-    st.write("🔹 Model Raw Prediction:", model.predict(input_data))
-    st.write("🔹 Model Predicted Probability:", model.predict_proba(input_data))
-
-    # Display results
-    st.subheader("📊 Prediction Result")
-    if prediction == 1:
-        st.error(f"🚨 **High Risk:** Customer is likely to churn. (Probability: {churn_prob:.2f})")
-    else:
-        st.success(f"✅ **Low Risk:** Customer is unlikely to churn. (Probability: {churn_prob:.2f})")
-
-    # Fix progress bar error by ensuring a valid range
-    st.progress(min(max(churn_prob, 0.01), 1.0))
+# Fix progress bar error
+st.progress(min(max(churn_prob, 0.01), 1.0))
 
 # Footer
 st.markdown("""
