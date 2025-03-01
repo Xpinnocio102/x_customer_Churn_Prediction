@@ -30,10 +30,10 @@ phone_service = st.sidebar.selectbox("📞 Phone Service", ["Yes", "No"])
 paperless_billing = st.sidebar.selectbox("📄 Paperless Billing", ["Yes", "No"])
 multiple_lines = st.sidebar.selectbox("📶 Multiple Lines", ["Yes", "No"])
 
-# Numerical inputs
-tenure = st.sidebar.slider("📅 Customer Tenure (Months)", 0, 72, 12)
-monthly_charges = st.sidebar.number_input("💵 Monthly Charges", min_value=10, max_value=150, value=50)
-total_charges = tenure * monthly_charges  # Auto-calculate
+# Numerical inputs (with normalization to match model training scale)
+tenure = st.sidebar.slider("📅 Customer Tenure (Months)", 0, 72, 12) / 72  # Normalize to 0-1
+monthly_charges = st.sidebar.number_input("💵 Monthly Charges", min_value=10, max_value=150, value=50) / 150  # Normalize to 0-1
+total_charges = (tenure * monthly_charges) / (72 * 150)  # Normalize 0-1
 
 # Additional categorical features
 contract = st.sidebar.selectbox("📜 Contract Type", ["Month-to-month", "One year", "Two year"])
@@ -100,6 +100,10 @@ st.write("🔹 Input Data Values:", input_data_df.values)
 if st.sidebar.button("🔍 Predict Churn"):
     prediction = model.predict(input_data)[0]
     churn_prob = float(model.predict_proba(input_data)[0][1])  # Ensure it's a float
+
+    # Debugging: Print model outputs
+    st.write("🔹 Model Raw Prediction:", model.predict(input_data))
+    st.write("🔹 Model Predicted Probability:", model.predict_proba(input_data))
 
     # Display results
     st.subheader("📊 Prediction Result")
