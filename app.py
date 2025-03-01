@@ -65,7 +65,7 @@ expected_features = [
     "PaymentMethod_Mailed check"
 ]
 
-# Create input feature array
+# Create input feature array (flattening categorical lists)
 input_values = [
     gender_map[gender], 0,  # SeniorCitizen (default 0)
     binary_map[partner], binary_map[dependents], tenure,
@@ -78,6 +78,10 @@ input_values = [
     *contract_map[contract],  # Contract type encoding
     *payment_map[payment_method]  # Payment method encoding
 ]
+
+# Debugging: Ensure input length matches expected features
+st.write(f"🔹 Expected Features Count: {len(expected_features)}")
+st.write(f"🔹 Provided Input Values Count: {len(input_values)}")
 
 # Convert input into DataFrame with correct feature names
 input_data_df = pd.DataFrame([input_values], columns=expected_features)
@@ -119,5 +123,5 @@ if st.sidebar.button("🔍 Predict Churn"):
 # Footer
 st.markdown("""
 ---
-🎯 Developed by **Ani Chidera N** | 🚀 Powered by **Xpinnocio102**
+🎯 Developed by **Xpinnocio2** | 🚀 Powered by **x102_ML**
 """)
