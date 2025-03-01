@@ -30,10 +30,10 @@ phone_service = st.sidebar.selectbox("📞 Phone Service", ["Yes", "No"])
 paperless_billing = st.sidebar.selectbox("📄 Paperless Billing", ["Yes", "No"])
 multiple_lines = st.sidebar.selectbox("📶 Multiple Lines", ["Yes", "No"])
 
-# Numerical inputs (with normalization to match model training scale)
-tenure = st.sidebar.slider("📅 Customer Tenure (Months)", 0, 72, 12) / 72  # Normalize to 0-1
-monthly_charges = st.sidebar.number_input("💵 Monthly Charges", min_value=10, max_value=150, value=50) / 150  # Normalize to 0-1
-total_charges = (tenure * monthly_charges) / (72 * 150)  # Normalize 0-1
+# Numerical inputs (scaled to match training)
+tenure = (st.sidebar.slider("📅 Customer Tenure (Months)", 0, 72, 12) - 0) / (72 - 0)  # Scale to 0-1
+monthly_charges = (st.sidebar.number_input("💵 Monthly Charges", min_value=10, max_value=150, value=50) - 10) / (150 - 10)  # Scale to 0-1
+total_charges = (tenure * monthly_charges - 0) / ((72 * 150) - 0)  # Scale to 0-1
 
 # Additional categorical features
 contract = st.sidebar.selectbox("📜 Contract Type", ["Month-to-month", "One year", "Two year"])
@@ -49,9 +49,9 @@ streaming_movies = st.sidebar.selectbox("🎥 Streaming Movies", ["Yes", "No"])
 # Encode categorical variables
 gender_map = {"Male": 0, "Female": 1}
 binary_map = {"No": 0, "Yes": 1}
-contract_map = {"Month-to-month": [0, 0], "One year": [1, 0], "Two year": [0, 1]}
-payment_map = {"Electronic check": [0, 1, 0], "Mailed check": [0, 0, 1], "Credit card (automatic)": [1, 0, 0]}
-internet_map = {"DSL": [0, 0], "Fiber optic": [1, 0], "No": [0, 1]}
+contract_map = {"Month-to-month": [1, 0, 0], "One year": [0, 1, 0], "Two year": [0, 0, 1]}
+payment_map = {"Electronic check": [1, 0, 0], "Mailed check": [0, 1, 0], "Credit card (automatic)": [0, 0, 1]}
+internet_map = {"DSL": [1, 0, 0], "Fiber optic": [0, 1, 0], "No": [0, 0, 1]}
 
 # Define expected model features (must match training data exactly)
 expected_features = [
@@ -60,8 +60,9 @@ expected_features = [
     "MultipleLines_Yes", "InternetService_Fiber optic", "InternetService_No",
     "OnlineSecurity_Yes", "OnlineBackup_Yes", "DeviceProtection_Yes",
     "TechSupport_Yes", "StreamingTV_Yes", "StreamingMovies_Yes",
-    "Contract_One year", "Contract_Two year", "PaymentMethod_Credit card (automatic)",
-    "PaymentMethod_Electronic check", "PaymentMethod_Mailed check"
+    "Contract_Month-to-month", "Contract_One year", "Contract_Two year",
+    "PaymentMethod_Credit card (automatic)", "PaymentMethod_Electronic check",
+    "PaymentMethod_Mailed check"
 ]
 
 # Create input feature array
@@ -118,5 +119,5 @@ if st.sidebar.button("🔍 Predict Churn"):
 # Footer
 st.markdown("""
 ---
-🎯 Developed by **Your Name** | 🚀 Powered by **Machine Learning**
+🎯 Developed by **Ani Chidera N** | 🚀 Powered by **Xpinnocio102**
 """)
