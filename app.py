@@ -20,18 +20,28 @@ total_charges = tenure * monthly_charges  # Auto-calculate
 contract_type = st.sidebar.selectbox("📜 Contract Type", ["Month-to-month", "One year", "Two year"])
 payment_method = st.sidebar.selectbox("💳 Payment Method", ["Electronic check", "Mailed check", "Credit card (automatic)"])
 
-# Convert categorical inputs into numerical format (match model training)
-contract_map = {"Month-to-month": [1, 0], "One year": [0, 1], "Two year": [0, 0]}
+# Convert categorical inputs into numerical format (matching model training)
+contract_map = {"Month-to-month": [1, 0, 0], "One year": [0, 1, 0], "Two year": [0, 0, 1]}
 payment_map = {"Electronic check": [1, 0, 0], "Mailed check": [0, 1, 0], "Credit card (automatic)": [0, 0, 1]}
 
-# Create the input DataFrame to match training data format
-columns = ["tenure", "MonthlyCharges", "TotalCharges", "Contract_Month-to-month", "Contract_One year", "Contract_Two year",
-           "PaymentMethod_Electronic check", "PaymentMethod_Mailed check", "PaymentMethod_Credit card (automatic)"]
+# ✅ Ensure input values match the training format
+columns = [
+    "tenure", "MonthlyCharges", "TotalCharges",
+    "Contract_Month-to-month", "Contract_One year", "Contract_Two year",
+    "PaymentMethod_Electronic check", "PaymentMethod_Mailed check", "PaymentMethod_Credit card (automatic)"
+]
 
-input_data_df = pd.DataFrame([[
+# Create DataFrame with proper structure
+input_values = [
     tenure, monthly_charges, total_charges,
     *contract_map[contract_type], *payment_map[payment_method]
-]], columns=columns)
+]
+
+# Debugging: Check if input data matches expected feature count
+st.write(f"Expected features: {len(columns)}, Provided features: {len(input_values)}")
+
+# Convert input into DataFrame
+input_data_df = pd.DataFrame([input_values], columns=columns)
 
 # Ensure feature order matches training set
 input_data_df = input_data_df[model.feature_names_in_]
@@ -39,9 +49,8 @@ input_data_df = input_data_df[model.feature_names_in_]
 # Convert to NumPy array
 input_data = input_data_df.to_numpy()
 
-# ✅ Debugging: Print input shape AFTER defining input_data
-st.write("Input data shape:", input_data.shape)
-st.write("Expected features:", model.n_features_in_)
+# Debugging: Check final input shape
+st.write("Final Input Data Shape:", input_data.shape)
 
 # Prediction Button
 if st.sidebar.button("🔍 Predict Churn"):
