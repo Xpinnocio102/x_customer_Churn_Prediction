@@ -3,7 +3,8 @@ import joblib
 import numpy as np
 
 # Load the trained model
-model = joblib.load("churn_prediction_model.pkl")
+model = joblib.load("Xpinnocio_churn_prediction_model.pkl")
+
 
 # Title of the app
 st.title("Customer Churn Prediction App")
